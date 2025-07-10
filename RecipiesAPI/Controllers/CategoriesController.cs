@@ -2,11 +2,13 @@
 using RecipiesAPI.Models.DTO;
 using RecipiesAPI.Models;
 using RecipiesAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RecipiesAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")] // e.g., /api/categories
+    [Authorize]
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
