@@ -9,24 +9,21 @@ namespace RecipiesAPI.Models
         public int Id { get; set; }
 
         [Required]
-        [StringLength(255)] // Or appropriate length for your token generation strategy
+        [StringLength(255)] 
         public string RefreshToken { get; set; }
 
         [Required]
         public DateTime ExpiryDate { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Auto-set creation time
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; 
 
-        public DateTime? RevokedAt { get; set; } // Nullable, set when revoked
+        public DateTime? RevokedAt { get; set; } 
 
-        public bool IsRevoked => RevokedAt != null; // Helper property
+        public bool IsRevoked => RevokedAt != null; 
 
         [ForeignKey("User")]
         public int UserId { get; set; }
-        public User User { get; set; } // Navigation property to the User
+        public User User { get; set; } 
 
-        // Optional: Can add more metadata like IP address, client ID etc.
-        // [StringLength(45)]
-        // public string IpAddress { get; set; }
     }
 }

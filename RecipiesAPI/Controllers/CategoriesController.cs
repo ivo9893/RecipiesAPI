@@ -18,11 +18,6 @@ namespace RecipiesAPI.Controllers
             _categoryService = categoryService;
         }
 
-        /// <summary>
-        /// Creates a new category.
-        /// </summary>
-        /// <param name="categoryDto">The category data to create.</param>
-        /// <returns>The newly created category.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(Category), 201)] 
         [ProducesResponseType(400)] 
