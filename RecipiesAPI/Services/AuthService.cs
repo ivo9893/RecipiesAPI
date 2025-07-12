@@ -22,7 +22,6 @@ namespace RecipiesAPI.Services
             _configuration = configuration;
         }
 
-        // --- Login Method ---
         public async Task<AuthResponceDTO> LoginAsync(LoginDTO loginDto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
@@ -108,7 +107,6 @@ namespace RecipiesAPI.Services
             };
         }
 
-        // --- Helper: Generate JWT Access Token (existing method, potentially updated expiry) ---
         private string GenerateJwtToken(User user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
@@ -133,16 +131,15 @@ namespace RecipiesAPI.Services
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expirationMinutes), // Use minutes from settings
+                expires: DateTime.UtcNow.AddMinutes(expirationMinutes), 
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        // --- Helper: Generate Refresh Token ---
         private string GenerateRefreshToken()
         {
-            var randomNumber = new byte[32]; // 256-bit token
+            var randomNumber = new byte[32]; 
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(randomNumber);

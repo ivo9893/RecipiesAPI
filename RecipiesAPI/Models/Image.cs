@@ -10,11 +10,11 @@ namespace RecipiesAPI.Models
 
         [ForeignKey("Recipe")]
         public int RecipeId { get; set; }
-        public Recipe Recipe { get; set; } // Navigation property
+        public Recipe Recipe { get; set; } 
 
         [Required]
         [Url]
-        [MaxLength(2048)] // Standard max length for URLs
-        public string Url { get; set; } // URL to the image
+        [MaxLength(2048)] 
+        public string Url { get; set; } 
     }
 }

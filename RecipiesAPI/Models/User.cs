@@ -8,7 +8,7 @@ namespace RecipiesAPI.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(255)] // Assuming a reasonable max length for names
+        [MaxLength(255)] 
         public string FirstName { get; set; }
 
         [Required]
@@ -17,15 +17,14 @@ namespace RecipiesAPI.Models
 
         [Required]
         [EmailAddress]
-        [MaxLength(255)] // Assuming a reasonable max length for email
+        [MaxLength(255)] 
         public string Email { get; set; }
 
         [Required]
-        [MinLength(8)] // Assuming a minimum password length
-        [MaxLength(255)] // Assuming a reasonable max length for hashed password
-        public string Password { get; set; } // In a real application, this would be a hashed password
+        [MinLength(8)] 
+        [MaxLength(255)] 
+        public string Password { get; set; } 
 
-        // Navigation property for Recipes authored by this user
         public ICollection<Recipe> Recipes { get; set; }
     }
 }

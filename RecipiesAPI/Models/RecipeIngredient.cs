@@ -9,17 +9,16 @@ namespace RecipiesAPI.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(255)] // e.g., "Salt", "Milk"
+        [MaxLength(255)] 
         public string Name { get; set; }
 
         [ForeignKey("Recipe")]
         public int RecipeId { get; set; }
-        public Recipe Recipe { get; set; } // Navigation property
+        public Recipe Recipe { get; set; } 
 
-        public decimal Quantity { get; set; } // Use decimal for precise quantities
-                                              // Alternatively, if quantities are always whole numbers, use int
+        public decimal Quantity { get; set; } 
 
-        [MaxLength(50)] // e.g., "g", "ml", "tsp", "cups"
+        [MaxLength(50)] 
         public string Unit { get; set; }
     }
 }
