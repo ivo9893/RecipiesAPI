@@ -1,1 +1,1 @@
-test
+This is RecipesApp project that support Web API with basic CRUD operations for managing resources. 
