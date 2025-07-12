@@ -10,11 +10,11 @@ namespace RecipiesAPI.Models
 
         [ForeignKey("Category")]
         public int CategoryId { get; set; }
-        public Category Category { get; set; } // Navigation property
+        public Category Category { get; set; } 
 
         [ForeignKey("Recipe")]
         public int RecipeId { get; set; }
-        public Recipe Recipe { get; set; } // Navigation property
+        public Recipe Recipe { get; set; } 
 
         [Required]
         public DateTime CreatedAt { get; set; }

@@ -9,10 +9,9 @@ namespace RecipiesAPI.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(100)] // e.g., "Salad", "Meat"
+        [MaxLength(100)] 
         public string Name { get; set; }
 
-        // Navigation property for Recipes in this category (many-to-many relationship)
         public ICollection<RecipeCategory> RecipeCategories { get; set; }
     }
 }

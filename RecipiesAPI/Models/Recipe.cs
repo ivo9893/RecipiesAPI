@@ -9,35 +9,34 @@ namespace RecipiesAPI.Models
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(500)] // Assuming a reasonable max length for recipe name
+        [MaxLength(500)] 
         public string Name { get; set; }
 
         [Required]
-        public string Description { get; set; } // Can be longer, so no MaxLength here unless specified
+        public string Description { get; set; } 
 
         [Required]
-        public TimeSpan CookTime { get; set; } // Store as TimeSpan for duration
-                                               // Alternatively, if stored as minutes/seconds in DB, use int CookTimeInMinutes;
+        public TimeSpan CookTime { get; set; }
+                                              
 
         [Required]
-        public TimeSpan PrepTime { get; set; } // Store as TimeSpan for duration
-                                               // Alternatively, if stored as minutes/seconds in DB, use int PrepTimeInMinutes;
+        public TimeSpan PrepTime { get; set; } 
+                                               
 
         public int Servings { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; }
 
-        public DateTime? UpdatedAt { get; set; } // Nullable if not always updated
+        public DateTime? UpdatedAt { get; set; } 
 
         [ForeignKey("Author")]
-        public int AuthorId { get; set; } // Foreign key to User
-        public User Author { get; set; } // Navigation property
+        public int AuthorId { get; set; } 
+        public User Author { get; set; } 
 
         [Required]
-        public string Instructions { get; set; } // Can be very long
+        public string Instructions { get; set; } 
 
-        // Navigation properties
         public ICollection<RecipeIngredient> RecipeIngredients { get; set; }
         public ICollection<Image> Images { get; set; }
         public ICollection<RecipeCategory> RecipeCategories { get; set; }
