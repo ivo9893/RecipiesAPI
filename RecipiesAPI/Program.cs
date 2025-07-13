@@ -21,6 +21,10 @@ builder.Services.AddSwaggerGen();           // Registers Swagger generator
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRecipeCategoryService, RecipeCategoryService>();
+builder.Services.AddScoped<IRecipeIngredientService, RecipeIngredientService>();
+builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IRecipeService, RecipeService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
