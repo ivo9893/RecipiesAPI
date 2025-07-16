@@ -24,46 +24,30 @@ namespace RecipiesAPI.Services
 
         public async Task<Recipe> CreateRecipeAsync(CreateRecipeDTO dto)
         {
-            // Validate Recipe fields (same as before)
-            if (string.IsNullOrWhiteSpace(dto.Name) || dto.Name.Length > 500)
-                throw new ArgumentException("Name is required and must be less than 500 characters.");
-
-            if (string.IsNullOrWhiteSpace(dto.Description))
-                throw new ArgumentException("Description is required.");
-
-            if (dto.CookTime < TimeSpan.Zero)
-                throw new ArgumentException("CookTime must be non-negative.");
-
-            if (dto.PrepTime < TimeSpan.Zero)
-                throw new ArgumentException("PrepTime must be non-negative.");
-
-            if (dto.Servings < 0)
-                throw new ArgumentException("Servings must be non-negative.");
-
-            if (string.IsNullOrWhiteSpace(dto.Instructions))
-                throw new ArgumentException("Instructions are required.");
-
-            // Check Author exists
+   
             var authorExists = await _context.Users.AnyAsync(u => u.Id == dto.AuthorId);
             if (!authorExists)
                 throw new Exception($"Author with Id {dto.AuthorId} not found.");
+ 
 
-            // Create Recipe entity
-            var recipe = new Recipe
-            {
-                Name = dto.Name.Trim(),
-                Description = dto.Description.Trim(),
-                CookTime = dto.CookTime,
-                PrepTime = dto.PrepTime,
-                Servings = dto.Servings,
-                AuthorId = dto.AuthorId,
-                Instructions = dto.Instructions.Trim(),
-                CreatedAt = DateTime.UtcNow
-            };
+         
 
 
             try
             {
+
+                var recipe = new Recipe
+                {
+                    Name = dto.Name.Trim(),
+                    Description = dto.Description.Trim(),
+                    CookTime = dto.CookTime,
+                    PrepTime = dto.PrepTime,
+                    Servings = dto.Servings,
+                    AuthorId = dto.AuthorId,
+                    Instructions = dto.Instructions.Trim(),
+                    CreatedAt = DateTime.UtcNow
+                };
+
                 _context.Recipes.Add(recipe);
 
                 await _context.SaveChangesAsync();
@@ -74,11 +58,13 @@ namespace RecipiesAPI.Services
 
                 await _imageService.CreateImageAsync(dto.Images, recipe.Id);
 
+                return recipe;
             } catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
-            return recipe;
+
+            throw new Exception("An error occurred while creating the recipe. Please try again later.");
 
         }
     }
