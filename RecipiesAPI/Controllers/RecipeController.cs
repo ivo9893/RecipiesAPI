@@ -31,5 +31,51 @@ namespace RecipiesAPI.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetRecipeById(int id)
+        {
+            try
+            {
+                var recipe = await _recipeService.GetRecipeByIdAsync(id);
+                return Ok(recipe);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("author/{authorId}")]
+        public async Task<IActionResult> GetRecipesByAuthorId(int authorId)
+        {
+            try
+            {
+                var recipes = await _recipeService.GetRecipesByAuthorIdAsync(authorId);
+                return Ok(recipes);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllRecipes()
+        {
+            try
+            {
+                var recipes = await _recipeService.GetAllRecipesAsync();
+                return Ok(recipes);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }
