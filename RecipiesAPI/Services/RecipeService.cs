@@ -22,16 +22,51 @@ namespace RecipiesAPI.Services
             _imageService = imageService;
         }
 
+        public async Task<List<Recipe>> GetAllRecipesAsync()
+        {
+            return await _context.Recipes
+                .Include(r => r.Author)
+                .Include(r => r.RecipeCategories)
+                    .ThenInclude(rc => rc.Category)
+                .Include(r => r.RecipeIngredients)
+                .Include(r => r.Images)
+                .ToListAsync();
+        }
+
+        public async Task<Recipe> GetRecipeByIdAsync(int id)
+        {
+            var recipe = await _context.Recipes
+                .Include(r => r.Author)
+                .Include(r => r.RecipeCategories)
+                    .ThenInclude(rc => rc.Category)
+                .Include(r => r.RecipeIngredients)
+                .Include(r => r.Images)
+                .FirstOrDefaultAsync(r => r.Id == id);
+            if (recipe == null)
+            {
+                throw new KeyNotFoundException($"Recipe with Id {id} not found.");
+            }
+            return recipe;
+        }
+
+        public async Task<List<Recipe>> GetRecipesByAuthorIdAsync(int authorId)
+        {
+            return await _context.Recipes
+                .Where(r => r.AuthorId == authorId)
+                .Include(r => r.Author)
+                .Include(r => r.RecipeCategories)
+                    .ThenInclude(rc => rc.Category)
+                .Include(r => r.RecipeIngredients)
+                .Include(r => r.Images)
+                .ToListAsync();
+        }
+
         public async Task<Recipe> CreateRecipeAsync(CreateRecipeDTO dto)
         {
    
             var authorExists = await _context.Users.AnyAsync(u => u.Id == dto.AuthorId);
             if (!authorExists)
                 throw new Exception($"Author with Id {dto.AuthorId} not found.");
- 
-
-         
-
 
             try
             {
