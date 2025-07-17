@@ -35,6 +35,11 @@ namespace RecipiesAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRecipeById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new { message = "Invalid RecipeId. Must be greater than zero." });
+            }
+
             try
             {
                 var recipe = await _recipeService.GetRecipeByIdAsync(id);
@@ -53,6 +58,11 @@ namespace RecipiesAPI.Controllers
         [HttpGet("author/{authorId}")]
         public async Task<IActionResult> GetRecipesByAuthorId(int authorId)
         {
+            if (authorId <= 0)
+            {
+                return BadRequest(new { message = "Invalid authorId. Must be greater than zero." });
+            }
+
             try
             {
                 var recipes = await _recipeService.GetRecipesByAuthorIdAsync(authorId);
@@ -70,6 +80,25 @@ namespace RecipiesAPI.Controllers
             try
             {
                 var recipes = await _recipeService.GetAllRecipesAsync();
+                return Ok(recipes);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("category/{categoryId}")]
+        public async Task<IActionResult> GetRecipesByCategoryId(int categoryId)
+        {
+            if (categoryId <= 0)
+            {
+                return BadRequest(new { message = "Invalid categoryId. Must be greater than zero." });
+            }
+
+            try
+            {
+                var recipes = await _recipeService.GetRecipesByCategoryIdAsync(categoryId);
                 return Ok(recipes);
             }
             catch (Exception ex)

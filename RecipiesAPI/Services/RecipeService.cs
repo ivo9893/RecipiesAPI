@@ -61,6 +61,21 @@ namespace RecipiesAPI.Services
                 .ToListAsync();
         }
 
+        public async Task<List<Recipe>> GetRecipesByCategoryIdAsync(int categoryId)
+        {
+            return await _context.RecipeCategories
+                .Where(rc => rc.CategoryId == categoryId)
+                .Select(rc => rc.Recipe)
+                .Include(r => r.Author)
+                .Include(r => r.RecipeCategories)
+                    .ThenInclude(rc => rc.Category)
+                .Include(r => r.RecipeIngredients)
+                .Include(r => r.Images)
+                .ToListAsync();
+        }
+
+
+
         public async Task<Recipe> CreateRecipeAsync(CreateRecipeDTO dto)
         {
    
