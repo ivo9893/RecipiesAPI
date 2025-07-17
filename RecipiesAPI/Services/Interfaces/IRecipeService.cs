@@ -9,5 +9,6 @@ namespace RecipiesAPI.Services.Interfaces
         Task<Recipe> GetRecipeByIdAsync(int id);
         Task<List<Recipe>> GetRecipesByAuthorIdAsync(int authorId);
         Task<List<Recipe>> GetAllRecipesAsync();
+        Task<List<Recipe>> GetRecipesByCategoryIdAsync(int categoryId);
     }
 }
