@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RecipiesAPI.Models.DTO;
 using RecipiesAPI.Models;
 using RecipiesAPI.Services.Interfaces;
+using RecipiesAPI.Models.DTO.Request;
 
 namespace RecipiesAPI.Controllers
 {
