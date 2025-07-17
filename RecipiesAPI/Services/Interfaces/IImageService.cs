@@ -1,5 +1,5 @@
 ﻿using RecipiesAPI.Models;
-using RecipiesAPI.Models.DTO;
+using RecipiesAPI.Models.DTO.Request;
 
 namespace RecipiesAPI.Services.Interfaces
 {
