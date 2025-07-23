@@ -6,6 +6,7 @@ using RecipiesAPI.Data;
 using RecipiesAPI.Services;
 using RecipiesAPI.Services.Interfaces;
 using Microsoft.OpenApi.Models;
+using RecipiesAPI.Mapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer(); // Required for Swagger
 builder.Services.AddSwaggerGen();           // Registers Swagger generator
-
+builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
