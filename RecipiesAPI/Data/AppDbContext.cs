@@ -18,7 +18,7 @@ namespace RecipiesAPI.Data
         public DbSet<RecipeCategory> RecipeCategories { get; set; }
         public DbSet<Image> Images { get; set; }
 
-        public DbSet<Token> Token{ get; set; }
+        public DbSet<Token> Token { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,13 +72,6 @@ namespace RecipiesAPI.Data
                 .WithMany() // User can have many refresh tokens, but RefreshToken has one User
                 .HasForeignKey(rt => rt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-            // Data Seeding (Optional, but good for initial data)
-            // Example for Category:
-            // modelBuilder.Entity<Category>().HasData(
-            //     new Category { Id = 1, Name = "Salad" },
-            //     new Category { Id = 2, Name = "Meat" },
-            //     new Category { Id = 3, Name = "Dessert" }
-            // );
         }
     }
 }

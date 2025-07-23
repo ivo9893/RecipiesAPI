@@ -7,6 +7,9 @@ using RecipiesAPI.Services;
 using RecipiesAPI.Services.Interfaces;
 using Microsoft.OpenApi.Models;
 using RecipiesAPI.Mapper;
+using DotNetEnv;
+
+Env.Load(); // defaults to .env in current directory
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +31,7 @@ builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")));
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured.");
