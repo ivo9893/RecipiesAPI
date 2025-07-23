@@ -24,7 +24,7 @@ namespace RecipiesAPI.Controllers
             try
             {
                 var createdRecipe = await _recipeService.CreateRecipeAsync(dto);
-                return Ok("Success");
+                return Ok("Successfully created recipe.");
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using RecipiesAPI.Data;
 using RecipiesAPI.Models;
 using RecipiesAPI.Models.DTO.Request;
@@ -10,9 +11,12 @@ namespace RecipiesAPI.Services
     {
         private readonly AppDbContext _context;
 
-        public CategoryService(AppDbContext context)
+        private readonly IMapper _mapper;
+
+        public CategoryService(AppDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<Category> CreateCategoryAsync(CreateCategoryDTO categoryDTO)
@@ -20,7 +24,7 @@ namespace RecipiesAPI.Services
             var existingCategory = await _context.Categories
                 .FirstOrDefaultAsync(c => c.Name.Equals(categoryDTO.Name));
 
-            if(existingCategory != null)
+            if (existingCategory != null)
             {
                 throw new InvalidOperationException($"Category '{categoryDTO.Name}' already exists.");
             }
@@ -34,6 +38,16 @@ namespace RecipiesAPI.Services
             await _context.SaveChangesAsync();
 
             return category;
+        }
+        public async Task<List<Category>> GetAllCategoriesAsync()
+        {
+            var categories = await _context.Categories
+                .ToListAsync();
+
+            var response = _mapper.Map<List<Category>>(categories);
+
+            return response;
+
         }
 
     }

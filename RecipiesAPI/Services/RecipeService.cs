@@ -80,7 +80,7 @@ namespace RecipiesAPI.Services
 
         public async Task<List<RecipeResponse>> GetRecipesByCategoryIdAsync(int categoryId)
         {
-            var recipes= await _context.Recipes
+            var recipes = await _context.Recipes
             .Where(r => r.RecipeCategories.Any(rc => rc.CategoryId == categoryId)).ToListAsync();
 
             var response = _mapper.Map<List<RecipeResponse>>(recipes);
@@ -88,17 +88,15 @@ namespace RecipiesAPI.Services
             return response;
         }
 
-
-
         public async Task<Recipe> CreateRecipeAsync(CreateRecipeDTO dto)
         {
-   
             var authorExists = await _context.Users.AnyAsync(u => u.Id == dto.AuthorId);
+
             if (!authorExists)
                 throw new Exception($"Author with Id {dto.AuthorId} not found.");
-
             try
             {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
 
                 var recipe = new Recipe
                 {
@@ -113,23 +111,24 @@ namespace RecipiesAPI.Services
                 };
 
                 _context.Recipes.Add(recipe);
-
                 await _context.SaveChangesAsync();
 
+                // Assuming these services also use the same DbContext instance (important for consistency)
                 await _categoryService.CreateRecipeCategoryAsync(dto.RecipeCategories, recipe.Id);
-
                 await _ingredientService.CreateIngredientAsync(dto.RecipeIngredients, recipe.Id);
-
                 await _imageService.CreateImageAsync(dto.Images, recipe.Id);
 
+                // Commit transaction if all commands succeed, transaction will auto-rollback
+                // when disposed if either commands fails
+                await transaction.CommitAsync();
+
                 return recipe;
-            } catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
             }
-
-            throw new Exception("An error occurred while creating the recipe. Please try again later.");
-
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new Exception("An error occurred while creating the recipe. " + ex.Message);
+            }
         }
     }
 }
