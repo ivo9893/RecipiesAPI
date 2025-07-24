@@ -53,11 +53,6 @@ namespace RecipiesAPI.Data
                 .WithMany(r => r.RecipeCategories)
                 .HasForeignKey(rc => rc.RecipeId);
 
-            modelBuilder.Entity<RecipeCategory>()
-                .HasOne(rc => rc.Category)
-                .WithMany(c => c.RecipeCategories)
-                .HasForeignKey(rc => rc.CategoryId);
-
             // Optional: Define composite primary key for RecipeCategory if 'Id' isn't used
             // and you want RecipeId and CategoryId to be the primary key.
             // If RecipeCategory has its own 'Id' as shown in the schema, this is not needed for the PK.
