@@ -11,12 +11,9 @@ namespace RecipiesAPI.Services
     {
         private readonly AppDbContext _context;
 
-        private readonly IMapper _mapper;
-
-        public CategoryService(AppDbContext context, IMapper mapper)
+        public CategoryService(AppDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         public async Task<Category> CreateCategoryAsync(CreateCategoryDTO categoryDTO)
@@ -44,10 +41,7 @@ namespace RecipiesAPI.Services
             var categories = await _context.Categories
                 .ToListAsync();
 
-            var response = _mapper.Map<List<Category>>(categories);
-
-            return response;
-
+            return categories;
         }
 
     }
