@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgresdb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 124578
+      POSTGRES_DB: Recipies
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  webapi:
+    build: .
+    container_name: RecipiesAPI
+    ports:
+      - "5000:80"  # host:container
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:80  
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=Recipies;Username=postgres;Password=124578
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
