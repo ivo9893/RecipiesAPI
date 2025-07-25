@@ -6,6 +6,7 @@ namespace RecipiesAPI.Services.Interfaces
     public interface ICategoryService
     {
         Task<Category> CreateCategoryAsync(CreateCategoryDTO categoryDTO);
+        Task<List<Category>> GetAllCategoriesAsync();
 
     }
 }
