@@ -21,6 +21,8 @@ namespace RecipiesAPI.Mapper
             CreateMap<RecipeIngredient, RecipeIngredientResponse>();
 
             CreateMap<Image, ImageResponse>();
+            CreateMap<Category, CategoryResponse>();
+            CreateMap<User, UserResponse>();
 
             CreateMap<RecipeCategory, RecipeCategoryResponse>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Category.Id))
