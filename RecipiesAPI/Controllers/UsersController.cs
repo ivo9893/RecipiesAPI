@@ -32,7 +32,6 @@ namespace RecipiesAPI.Controllers
             {
                 var createdUser = await _userService.CreateUserAsync(userDto);
 
-                createdUser.Password = null;
 
                 return CreatedAtAction(nameof(Register), new { id = createdUser.Id }, createdUser);
             }

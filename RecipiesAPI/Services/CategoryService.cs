@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RecipiesAPI.Data;
 using RecipiesAPI.Models;
 using RecipiesAPI.Models.DTO.Request;
+using RecipiesAPI.Models.DTO.Responce;
 using RecipiesAPI.Services.Interfaces;
 
 namespace RecipiesAPI.Services
@@ -10,13 +11,15 @@ namespace RecipiesAPI.Services
     public class CategoryService : ICategoryService
     {
         private readonly AppDbContext _context;
+        private readonly IMapper _mapper;
 
-        public CategoryService(AppDbContext context)
+        public CategoryService(AppDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        public async Task<Category> CreateCategoryAsync(CreateCategoryDTO categoryDTO)
+        public async Task<CategoryResponse> CreateCategoryAsync(CreateCategoryDTO categoryDTO)
         {
             var existingCategory = await _context.Categories
                 .FirstOrDefaultAsync(c => c.Name.Equals(categoryDTO.Name));
@@ -34,14 +37,19 @@ namespace RecipiesAPI.Services
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
-            return category;
+            var response = _mapper.Map<CategoryResponse>(category);
+
+            return response;
         }
-        public async Task<List<Category>> GetAllCategoriesAsync()
+        public async Task<List<CategoryResponse>> GetAllCategoriesAsync()
         {
             var categories = await _context.Categories
                 .ToListAsync();
 
-            return categories;
+
+            var response = _mapper.Map<List<CategoryResponse>>(categories);
+
+            return response;
         }
 
     }
