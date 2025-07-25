@@ -18,7 +18,7 @@ namespace RecipiesAPI.Data
         public DbSet<RecipeCategory> RecipeCategories { get; set; }
         public DbSet<Image> Images { get; set; }
 
-        public DbSet<Token> Token{ get; set; }
+        public DbSet<Token> Token { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,11 +53,6 @@ namespace RecipiesAPI.Data
                 .WithMany(r => r.RecipeCategories)
                 .HasForeignKey(rc => rc.RecipeId);
 
-            modelBuilder.Entity<RecipeCategory>()
-                .HasOne(rc => rc.Category)
-                .WithMany(c => c.RecipeCategories)
-                .HasForeignKey(rc => rc.CategoryId);
-
             // Optional: Define composite primary key for RecipeCategory if 'Id' isn't used
             // and you want RecipeId and CategoryId to be the primary key.
             // If RecipeCategory has its own 'Id' as shown in the schema, this is not needed for the PK.
@@ -72,13 +67,6 @@ namespace RecipiesAPI.Data
                 .WithMany() // User can have many refresh tokens, but RefreshToken has one User
                 .HasForeignKey(rt => rt.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-            // Data Seeding (Optional, but good for initial data)
-            // Example for Category:
-            // modelBuilder.Entity<Category>().HasData(
-            //     new Category { Id = 1, Name = "Salad" },
-            //     new Category { Id = 2, Name = "Meat" },
-            //     new Category { Id = 3, Name = "Dessert" }
-            // );
         }
     }
 }
