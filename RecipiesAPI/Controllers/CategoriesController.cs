@@ -19,19 +19,19 @@ namespace RecipiesAPI.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(Category), 201)] 
-        [ProducesResponseType(400)] 
-        [ProducesResponseType(409)] 
+        [ProducesResponseType(typeof(Category), 201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(409)]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDTO categoryDto)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState); 
+                return BadRequest(ModelState);
             }
 
             try
             {
-                var createdCategory = await _categoryService.CreateCategoryAsync(categoryDto);        
+                var createdCategory = await _categoryService.CreateCategoryAsync(categoryDto);
                 return CreatedAtAction(nameof(CreateCategory), new { id = createdCategory.Id }, createdCategory);
             }
             catch (InvalidOperationException ex)
@@ -41,6 +41,20 @@ namespace RecipiesAPI.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, "An error occurred while creating the category.");
+            }
+        }
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllRecipes()
+        {
+            try
+            {
+                var recipes = await _categoryService.GetAllCategoriesAsync();
+                return Ok(recipes);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
     }
