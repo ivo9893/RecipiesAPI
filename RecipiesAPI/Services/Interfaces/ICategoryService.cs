@@ -1,12 +1,13 @@
 ﻿using RecipiesAPI.Models;
 using RecipiesAPI.Models.DTO.Request;
+using RecipiesAPI.Models.DTO.Responce;
 
 namespace RecipiesAPI.Services.Interfaces
 {
     public interface ICategoryService
     {
-        Task<Category> CreateCategoryAsync(CreateCategoryDTO categoryDTO);
-        Task<List<Category>> GetAllCategoriesAsync();
+        Task<CategoryResponse> CreateCategoryAsync(CreateCategoryDTO categoryDTO);
+        Task<List<CategoryResponse>> GetAllCategoriesAsync();
 
     }
 }

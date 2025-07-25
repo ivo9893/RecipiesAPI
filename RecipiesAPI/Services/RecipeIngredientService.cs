@@ -14,7 +14,7 @@ namespace RecipiesAPI.Services
             _context = context;
         }
 
-        public Task<List<RecipeIngredient>> CreateIngredientAsync(List<CreateRecipeIngredientDTO> dto, int recipeId = -1)
+        public async Task<List<RecipeIngredient>> CreateIngredientAsync(List<CreateRecipeIngredientDTO> dto, int recipeId = -1)
         {
             if (dto == null || !dto.Any())
             {
@@ -60,7 +60,8 @@ namespace RecipiesAPI.Services
             }
             _context.RecipeIngredients.AddRange(ingredients);
             _context.SaveChanges();
-            return Task.FromResult(ingredients);
+
+            return ingredients;
         }
     }
 }

@@ -11,5 +11,8 @@ namespace RecipiesAPI.Models
         [Required]
         [MaxLength(100)] 
         public string Name { get; set; }
+
+
+        public ICollection<RecipeCategory> RecipeCategories { get; set; }
     }
 }
