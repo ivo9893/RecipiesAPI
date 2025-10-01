@@ -14,6 +14,6 @@ namespace RecipiesAPI.Models.DTO.Request
 
         [Required(ErrorMessage = "Unit is required.")]
         [MaxLength(50, ErrorMessage = "Unit cannot exceed 50 characters.")]
-        public string Unit { get; set; }
+        public Units Unit { get; set; }
     }
 }

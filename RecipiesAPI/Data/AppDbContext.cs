@@ -19,6 +19,8 @@ namespace RecipiesAPI.Data
         public DbSet<Image> Images { get; set; }
 
         public DbSet<Token> Token { get; set; }
+        public DbSet<Units> Units { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
