@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using RecipiesAPI.Models.DTO.Responce;
 using RecipiesAPI.Models;
+using RecipiesAPI.Models.DTO.Response;
 
 namespace RecipiesAPI.Mapper
 {
@@ -27,6 +28,8 @@ namespace RecipiesAPI.Mapper
             CreateMap<RecipeCategory, RecipeCategoryResponse>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Category.Id))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Category.Name));
+
+            CreateMap<Units, UnitsResponse>();
         }
     }
 }
