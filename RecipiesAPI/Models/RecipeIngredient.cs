@@ -16,9 +16,10 @@ namespace RecipiesAPI.Models
         public int RecipeId { get; set; }
         public Recipe Recipe { get; set; } 
 
-        public decimal Quantity { get; set; } 
+        public decimal Quantity { get; set; }
 
-        [MaxLength(50)] 
-        public string Unit { get; set; }
+        [ForeignKey("Units")]
+        public int UnitId { get; set; }
+        public Units Unit { get; set; }
     }
 }
