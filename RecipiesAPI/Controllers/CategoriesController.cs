@@ -8,7 +8,6 @@ namespace RecipiesAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")] // e.g., /api/categories
-    [Authorize]
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
@@ -22,6 +21,7 @@ namespace RecipiesAPI.Controllers
         [ProducesResponseType(typeof(Category), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(409)]
+        [Authorize]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDTO categoryDto)
         {
             if (!ModelState.IsValid)
@@ -45,6 +45,7 @@ namespace RecipiesAPI.Controllers
         }
 
         [HttpGet("all")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllRecipes()
         {
             try

@@ -12,6 +12,21 @@ services:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
+  migrate:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: sh -c "dotnet tool restore && dotnet restore && dotnet ef database update --no-build --context AppDbContext --connection 'Host=postgresdb;Port=5432;Database=Recipies;Username=postgres;Password=124578'"
 
   webapi:
     build: .
@@ -24,6 +39,8 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=Recipies;Username=postgres;Password=124578
     depends_on:
       - postgres
+      - migrate
+ 
 
 volumes:
   pgdata:
