@@ -44,7 +44,7 @@ namespace RecipiesAPI.Services
                     throw new ArgumentException("Ingredient quantity must be greater than zero.");
                 }
 
-                if (string.IsNullOrEmpty(ingredientDto.Unit))
+                if (ingredientDto.Unit == null)
                 {
                     throw new ArgumentException("Unit cannot be empty.");
                 }
