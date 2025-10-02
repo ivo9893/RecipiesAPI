@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Google.Apis.Auth;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RecipiesAPI.Data;
 using RecipiesAPI.Models;
@@ -24,6 +25,11 @@ namespace RecipiesAPI.Services
 
         public async Task<AuthResponceDTO> LoginAsync(LoginDTO loginDto)
         {
+
+            if(loginDto.Password == null) {
+                return null;
+            }
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
@@ -144,6 +150,59 @@ namespace RecipiesAPI.Services
             {
                 rng.GetBytes(randomNumber);
                 return Convert.ToBase64String(randomNumber);
+            }
+        }
+
+        public async Task<AuthResponceDTO> VerifyGoogleTokenAsync(string idToken) {
+            try {
+                var settings = new GoogleJsonWebSignature.ValidationSettings() {
+                    Audience = new[] { _configuration["GoogleWebClientID"] } 
+                };
+
+                var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == payload.Email);
+                if (user == null) {
+                    user = new User {
+                        Email = payload.Email,
+                        FirstName = payload.GivenName,
+                        LastName = payload.FamilyName,
+                        GoogleId = payload.Subject,
+                        Password = null // or random placeholder
+                    };
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Generate Access Token
+                var accessToken = GenerateJwtToken(user);
+                var accessTokenExpiry = DateTime.UtcNow.AddMinutes(
+                    int.Parse(_configuration["JwtSettings:TokenExpirationMinutes"]));
+
+                // Generate and Save Refresh Token
+                var refreshToken = GenerateRefreshToken();
+                var refreshTokenExpiry = DateTime.UtcNow.AddDays(
+                    int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"]));
+
+                var newRefreshToken = new Token {
+                    RefreshToken = refreshToken,
+                    ExpiryDate = refreshTokenExpiry,
+                    UserId = user.Id
+                };
+
+                _context.Token.Add(newRefreshToken);
+                await _context.SaveChangesAsync();
+
+                return new AuthResponceDTO {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    AccessTokenExpiry = accessTokenExpiry,
+                    UserId = user.Id,
+                    Email = user.Email
+                };
+
+            } catch (Exception ex) {
+                throw new UnauthorizedAccessException("Invalid Google ID token.", ex);
             }
         }
     }

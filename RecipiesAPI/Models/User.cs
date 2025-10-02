@@ -20,10 +20,12 @@ namespace RecipiesAPI.Models
         [MaxLength(255)] 
         public string Email { get; set; }
 
-        [Required]
         [MinLength(8)] 
         [MaxLength(255)] 
-        public string Password { get; set; } 
+        public string Password { get; set; }
+
+        [MaxLength(255)]
+        public string? GoogleId { get; set; }
 
         public ICollection<Recipe> Recipes { get; set; }
     }
