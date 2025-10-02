@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RecipiesAPI.Models.DTO.Request;
 using RecipiesAPI.Services.Interfaces;
-
+using Google.Apis.Auth;
 namespace RecipiesAPI.Controllers
 {
     [ApiController]
@@ -65,6 +65,23 @@ namespace RecipiesAPI.Controllers
             }
 
             return Ok(authResponse);
+        }
+
+        [HttpPost("auth/google")]
+        public async Task<IActionResult> GoogleSignIn([FromBody] string token) {
+            try {
+
+                var authResponse = await _authService.VerifyGoogleTokenAsync(token);
+
+                if (authResponse == null) {
+                    return Unauthorized(new { message = "Invalid email or password." });
+                }
+
+                return Ok(authResponse);
+
+            } catch (UnauthorizedAccessException) {
+                return Unauthorized("Invalid Google ID token.");
+            }
         }
     }
 }
