@@ -20,7 +20,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer(); // Required for Swagger
 builder.Services.AddSwaggerGen();           // Registers Swagger generator
-builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
+builder.Services.AddAutoMapper(cfg => {
+cfg.LicenseKey = builder.Configuration["AutoMapperPlusLicenseKey"] ?? throw new InvalidOperationException("AutoMapper License Key not configured.");
+}, typeof(MappingProfile));
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
