@@ -22,7 +22,7 @@ namespace RecipiesAPI.Models
 
         [MinLength(8)] 
         [MaxLength(255)] 
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [MaxLength(255)]
         public string? GoogleId { get; set; }

@@ -67,7 +67,7 @@ namespace RecipiesAPI.Controllers
             return Ok(authResponse);
         }
 
-        [HttpPost("auth/google")]
+        [HttpPost("google")]
         public async Task<IActionResult> GoogleSignIn([FromBody] string token) {
             try {
 
