@@ -8,6 +8,7 @@ namespace RecipiesAPI.Services.Interfaces
         Task<AuthResponceDTO> LoginAsync(LoginDTO loginDto);
         Task<AuthResponceDTO> RefreshTokenAsync(string refreshToken);
         Task<AuthResponceDTO> VerifyGoogleTokenAsync(string idToken);
+        Task<AuthResponceDTO> LoginFacebookAsync(LoginFacebookDTO userDTO);
 
     }
 }
