@@ -83,5 +83,27 @@ namespace RecipiesAPI.Controllers
                 return Unauthorized("Invalid Google ID token.");
             }
         }
+
+        [HttpPost("facebook")]
+        public async Task<IActionResult> FacebookSignIn([FromBody] LoginFacebookDTO user)
+        {
+            try
+            {
+
+                var authResponse = await _authService.LoginFacebookAsync(user);
+
+                if (authResponse == null)
+                {
+                    return Unauthorized(new { message = "Invalid email or password." });
+                }
+
+                return Ok(authResponse);
+
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized("Invalid Google ID token.");
+            }
+        }
     }
 }

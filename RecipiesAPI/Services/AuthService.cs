@@ -205,6 +205,54 @@ namespace RecipiesAPI.Services
                 throw new UnauthorizedAccessException("Invalid Google ID token.", ex);
             }
         }
+
+        public async Task<AuthResponceDTO> LoginFacebookAsync(LoginFacebookDTO userDTO)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userDTO.email);
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = userDTO.email,
+                    FirstName = userDTO.firstName,
+                    LastName = userDTO.lastName,
+                    Password = null 
+                };
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+            }
+
+            // Generate Access Token
+            var accessToken = GenerateJwtToken(user);
+            var accessTokenExpiry = DateTime.UtcNow.AddMinutes(
+                int.Parse(_configuration["JwtSettings:TokenExpirationMinutes"]));
+
+            // Generate and Save Refresh Token
+            var refreshToken = GenerateRefreshToken();
+            var refreshTokenExpiry = DateTime.UtcNow.AddDays(
+                int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"]));
+
+            var newRefreshToken = new Token
+            {
+                RefreshToken = refreshToken,
+                ExpiryDate = refreshTokenExpiry,
+                UserId = user.Id
+            };
+
+            _context.Token.Add(newRefreshToken);
+            await _context.SaveChangesAsync();
+
+            return new AuthResponceDTO
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                AccessTokenExpiry = accessTokenExpiry,
+                UserId = user.Id,
+                Email = user.Email
+            };
+
+
+        }
     }
 }
 
