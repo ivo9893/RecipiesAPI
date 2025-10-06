@@ -31,6 +31,24 @@ namespace RecipiesAPI.Controllers
             }
         }
 
+        [HttpPost("insert")]
+        public async Task<IActionResult> CreateRecipies([FromBody] List<CreateRecipeDTO> dto)
+        {
+            try
+            {
+                foreach(var recipie in dto)
+                {
+                    var createdRecipe = await _recipeService.CreateRecipeAsync(recipie);
+                }
+                return Ok("Successfully created recipe.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRecipeById(int id)
         {
