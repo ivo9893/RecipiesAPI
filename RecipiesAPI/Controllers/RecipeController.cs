@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RecipiesAPI.Data;
 using RecipiesAPI.Models.DTO.Request;
 using RecipiesAPI.Services;
 using RecipiesAPI.Services.Interfaces;
@@ -11,10 +12,14 @@ namespace RecipiesAPI.Controllers
     public class RecipeController : ControllerBase
     {
         private readonly IRecipeService _recipeService;
+        private readonly AppDbContext _context;
+        private readonly ILogger<RecipeController> _logger;
 
-        public RecipeController(IRecipeService recipeService)
+        public RecipeController(IRecipeService recipeService, AppDbContext context, ILogger<RecipeController> logger)
         {
             _recipeService = recipeService;
+            _context = context;
+            _logger = logger;
         }
 
         [Authorize]
@@ -46,17 +51,33 @@ namespace RecipiesAPI.Controllers
                 return BadRequest(ModelState);
             }
 
+            if (dto == null || dto.Count == 0)
+            {
+                return BadRequest(new { message = "No recipes provided." });
+            }
+
+            _logger.LogInformation("Starting bulk insert of {Count} recipes", dto.Count);
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                foreach(var recipie in dto)
+                var createdCount = 0;
+                foreach(var recipe in dto)
                 {
-                    var createdRecipe = await _recipeService.CreateRecipeAsync(recipie);
+                    await _recipeService.CreateRecipeAsync(recipe);
+                    createdCount++;
                 }
-                return Ok("Successfully created recipe.");
+
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("Successfully bulk inserted {Count} recipes", createdCount);
+                return Ok(new { message = $"Successfully created {createdCount} recipes.", count = createdCount });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to bulk insert recipes. Transaction rolled back.");
+                return BadRequest(new { message = "An error occurred while creating recipes. All changes have been rolled back." });
             }
         }
 
@@ -110,6 +131,20 @@ namespace RecipiesAPI.Controllers
             {
                 var recipes = await _recipeService.GetAllRecipesAsync();
                 return Ok(recipes);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetAllRecipesPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var pagedRecipes = await _recipeService.GetAllRecipesPagedAsync(pageNumber, pageSize);
+                return Ok(pagedRecipes);
             }
             catch (Exception ex)
             {

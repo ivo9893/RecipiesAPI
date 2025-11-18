@@ -5,6 +5,7 @@ using RecipiesAPI.Data;
 using RecipiesAPI.Models;
 using RecipiesAPI.Models.DTO.Request;
 using RecipiesAPI.Services.Interfaces;
+using RecipiesAPI.Helpers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -18,18 +19,21 @@ namespace RecipiesAPI.Services
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(AppDbContext context, IConfiguration configuration, IHttpClientFactory httpClientFactory)
+        public AuthService(AppDbContext context, IConfiguration configuration, IHttpClientFactory httpClientFactory, ILogger<AuthService> logger)
         {
             _context = context;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _logger = logger;
         }
 
         public async Task<AuthResponceDTO> LoginAsync(LoginDTO loginDto)
         {
-
-            if(loginDto.Password == null) {
+            if(loginDto.Password == null)
+            {
+                _logger.LogWarning("Login attempt with null password for email: {Email}", loginDto.Email);
                 return null;
             }
 
@@ -37,18 +41,22 @@ namespace RecipiesAPI.Services
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.Password))
             {
+                _logger.LogWarning("Failed login attempt for email: {Email}", loginDto.Email);
                 return null; // Invalid credentials
             }
 
+            _logger.LogInformation("User {Email} logged in successfully", loginDto.Email);
+
             // Generate Access Token
             var accessToken = GenerateJwtToken(user);
+            var jwtSettings = _configuration.GetSection("JwtSettings");
             var accessTokenExpiry = DateTime.UtcNow.AddMinutes(
-                int.Parse(_configuration["JwtSettings:TokenExpirationMinutes"]));
+                jwtSettings.GetRequiredInt("TokenExpirationMinutes"));
 
             // Generate and Save Refresh Token
             var refreshToken = GenerateRefreshToken();
             var refreshTokenExpiry = DateTime.UtcNow.AddDays(
-                int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"]));
+                jwtSettings.GetRequiredInt("RefreshTokenExpirationDays"));
 
             var newRefreshToken = new Token
             {
@@ -79,8 +87,11 @@ namespace RecipiesAPI.Services
 
             if (existingRefreshToken == null || existingRefreshToken.IsRevoked || existingRefreshToken.ExpiryDate <= DateTime.UtcNow)
             {
+                _logger.LogWarning("Invalid, revoked, or expired refresh token attempt");
                 return null; // Invalid, revoked, or expired refresh token
             }
+
+            _logger.LogInformation("Refreshing token for user {UserId}", existingRefreshToken.User.Id);
 
             // Revoke the old refresh token (one-time use pattern)
             existingRefreshToken.RevokedAt = DateTime.UtcNow;
@@ -88,13 +99,14 @@ namespace RecipiesAPI.Services
 
             // Generate new Access Token
             var newAccessToken = GenerateJwtToken(existingRefreshToken.User);
+            var jwtSettings = _configuration.GetSection("JwtSettings");
             var newAccessTokenExpiry = DateTime.UtcNow.AddMinutes(
-                int.Parse(_configuration["JwtSettings:TokenExpirationMinutes"]));
+                jwtSettings.GetRequiredInt("TokenExpirationMinutes"));
 
             // Generate new Refresh Token
             var newRefreshTokenValue = GenerateRefreshToken();
             var newRefreshTokenExpiry = DateTime.UtcNow.AddDays(
-                int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"]));
+                jwtSettings.GetRequiredInt("RefreshTokenExpirationDays"));
 
             var newRefreshToken = new Token
             {
@@ -119,10 +131,10 @@ namespace RecipiesAPI.Services
         private string GenerateJwtToken(User user)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
-            var secret = jwtSettings["Secret"];
-            var issuer = jwtSettings["Issuer"];
-            var audience = jwtSettings["Audience"];
-            var expirationMinutes = int.Parse(jwtSettings["TokenExpirationMinutes"]);
+            var secret = jwtSettings.GetRequiredString("Secret");
+            var issuer = jwtSettings.GetRequiredString("Issuer");
+            var audience = jwtSettings.GetRequiredString("Audience");
+            var expirationMinutes = jwtSettings.GetRequiredInt("TokenExpirationMinutes");
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -140,7 +152,7 @@ namespace RecipiesAPI.Services
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expirationMinutes), 
+                expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -156,22 +168,30 @@ namespace RecipiesAPI.Services
             }
         }
 
-        public async Task<AuthResponceDTO> VerifyGoogleTokenAsync(string idToken) {
-            try {
-                var settings = new GoogleJsonWebSignature.ValidationSettings() {
-                    Audience = new[] { _configuration["GoogleWebClientID"] } 
+        public async Task<AuthResponceDTO> VerifyGoogleTokenAsync(string idToken)
+        {
+            try
+            {
+                var googleClientId = _configuration.GetRequiredString("GoogleWebClientID");
+                var settings = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new[] { googleClientId }
                 };
 
                 var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+                _logger.LogInformation("Google token verified successfully for email: {Email}", payload.Email);
 
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == payload.Email);
-                if (user == null) {
-                    user = new User {
+                if (user == null)
+                {
+                    _logger.LogInformation("Creating new user from Google OAuth: {Email}", payload.Email);
+                    user = new User
+                    {
                         Email = payload.Email,
                         FirstName = payload.GivenName,
                         LastName = payload.FamilyName,
                         GoogleId = payload.Subject,
-                        Password = null // or random placeholder
+                        Password = null
                     };
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync();
@@ -179,13 +199,14 @@ namespace RecipiesAPI.Services
 
                 // Generate Access Token
                 var accessToken = GenerateJwtToken(user);
+                var jwtSettings = _configuration.GetSection("JwtSettings");
                 var accessTokenExpiry = DateTime.UtcNow.AddMinutes(
-                    int.Parse(_configuration["JwtSettings:TokenExpirationMinutes"]));
+                    jwtSettings.GetRequiredInt("TokenExpirationMinutes"));
 
                 // Generate and Save Refresh Token
                 var refreshToken = GenerateRefreshToken();
                 var refreshTokenExpiry = DateTime.UtcNow.AddDays(
-                    int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"]));
+                    jwtSettings.GetRequiredInt("RefreshTokenExpirationDays"));
 
                 var newRefreshToken = new Token {
                     RefreshToken = refreshToken,
@@ -204,7 +225,10 @@ namespace RecipiesAPI.Services
                     Email = user.Email
                 };
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to verify Google ID token");
                 throw new UnauthorizedAccessException("Invalid Google ID token.", ex);
             }
         }
@@ -221,6 +245,7 @@ namespace RecipiesAPI.Services
 
                 if (!facebookResponse.IsSuccessStatusCode)
                 {
+                    _logger.LogWarning("Invalid Facebook access token verification failed");
                     throw new UnauthorizedAccessException("Invalid Facebook access token.");
                 }
 
@@ -235,13 +260,17 @@ namespace RecipiesAPI.Services
 
                 if (string.IsNullOrEmpty(email))
                 {
+                    _logger.LogWarning("Facebook user email not provided");
                     throw new UnauthorizedAccessException("Email not provided by Facebook.");
                 }
+
+                _logger.LogInformation("Facebook token verified successfully for email: {Email}", email);
 
                 // Find or create user
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
                 if (user == null)
                 {
+                    _logger.LogInformation("Creating new user from Facebook OAuth: {Email}", email);
                     user = new User
                     {
                         Email = email,
@@ -255,13 +284,14 @@ namespace RecipiesAPI.Services
 
                 // Generate Access Token
                 var accessToken = GenerateJwtToken(user);
+                var jwtSettings = _configuration.GetSection("JwtSettings");
                 var accessTokenExpiry = DateTime.UtcNow.AddMinutes(
-                    int.Parse(_configuration["JwtSettings:TokenExpirationMinutes"]));
+                    jwtSettings.GetRequiredInt("TokenExpirationMinutes"));
 
                 // Generate and Save Refresh Token
                 var refreshToken = GenerateRefreshToken();
                 var refreshTokenExpiry = DateTime.UtcNow.AddDays(
-                    int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"]));
+                    jwtSettings.GetRequiredInt("RefreshTokenExpirationDays"));
 
                 var newRefreshToken = new Token
                 {
@@ -284,6 +314,7 @@ namespace RecipiesAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to verify Facebook access token");
                 throw new UnauthorizedAccessException("Invalid Facebook access token.", ex);
             }
         }
