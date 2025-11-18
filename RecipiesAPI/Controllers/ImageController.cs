@@ -19,8 +19,14 @@ namespace RecipiesAPI.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> UploadImages(List<IFormFile> files)
         {
+            const long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+            const int MAX_FILE_COUNT = 10; // Maximum 10 files per upload
+
             if (files == null || files.Count == 0)
                 return BadRequest("No files uploaded.");
+
+            if (files.Count > MAX_FILE_COUNT)
+                return BadRequest($"Maximum {MAX_FILE_COUNT} files allowed per upload.");
 
             var uploadsFolder = Path.Combine(_environment.ContentRootPath, "uploads");
 
@@ -32,11 +38,17 @@ namespace RecipiesAPI.Controllers
             var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif" };
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
 
+            // Validate all files before processing
             foreach (var file in files)
             {
+                if (file.Length > MAX_FILE_SIZE)
+                {
+                    return BadRequest($"File '{file.FileName}' exceeds maximum size of 5MB.");
+                }
+
                 if (!allowedMimeTypes.Contains(file.ContentType) || !allowedExtensions.Contains(Path.GetExtension(file.FileName).ToLower()))
                 {
-                    return BadRequest("Invalid file type. Only JPEG, PNG, and GIF files are allowed.");
+                    return BadRequest($"File '{file.FileName}' has invalid type. Only JPEG, PNG, and GIF files are allowed.");
                 }
             }
 

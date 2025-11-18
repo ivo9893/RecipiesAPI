@@ -74,27 +74,31 @@ namespace RecipiesAPI.Controllers
                 var authResponse = await _authService.VerifyGoogleTokenAsync(token);
 
                 if (authResponse == null) {
-                    return Unauthorized(new { message = "Invalid email or password." });
+                    return Unauthorized(new { message = "Authentication failed." });
                 }
 
                 return Ok(authResponse);
 
             } catch (UnauthorizedAccessException) {
-                return Unauthorized("Invalid Google ID token.");
+                return Unauthorized(new { message = "Invalid Google ID token." });
             }
         }
 
         [HttpPost("facebook")]
         public async Task<IActionResult> FacebookSignIn([FromBody] LoginFacebookDTO user)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
-
                 var authResponse = await _authService.LoginFacebookAsync(user);
 
                 if (authResponse == null)
                 {
-                    return Unauthorized(new { message = "Invalid email or password." });
+                    return Unauthorized(new { message = "Authentication failed." });
                 }
 
                 return Ok(authResponse);
@@ -102,7 +106,7 @@ namespace RecipiesAPI.Controllers
             }
             catch (UnauthorizedAccessException)
             {
-                return Unauthorized("Invalid Google ID token.");
+                return Unauthorized(new { message = "Invalid Facebook access token." });
             }
         }
     }

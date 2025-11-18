@@ -17,9 +17,15 @@ namespace RecipiesAPI.Controllers
             _recipeService = recipeService;
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateRecipe([FromBody] CreateRecipeDTO dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 var createdRecipe = await _recipeService.CreateRecipeAsync(dto);
@@ -31,9 +37,15 @@ namespace RecipiesAPI.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("insert")]
         public async Task<IActionResult> CreateRecipies([FromBody] List<CreateRecipeDTO> dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 foreach(var recipie in dto)

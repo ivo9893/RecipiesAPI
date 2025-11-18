@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace RecipiesAPI.Services
 {
@@ -16,11 +17,13 @@ namespace RecipiesAPI.Services
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public AuthService(AppDbContext context, IConfiguration configuration)
+        public AuthService(AppDbContext context, IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             _context = context;
             _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<AuthResponceDTO> LoginAsync(LoginDTO loginDto)
@@ -208,50 +211,81 @@ namespace RecipiesAPI.Services
 
         public async Task<AuthResponceDTO> LoginFacebookAsync(LoginFacebookDTO userDTO)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userDTO.email);
-            if (user == null)
+            try
             {
-                user = new User
+                // Verify Facebook access token with Facebook Graph API
+                var httpClient = _httpClientFactory.CreateClient();
+                var facebookResponse = await httpClient.GetAsync(
+                    $"https://graph.facebook.com/me?access_token={userDTO.AccessToken}&fields=id,email,first_name,last_name"
+                );
+
+                if (!facebookResponse.IsSuccessStatusCode)
                 {
-                    Email = userDTO.email,
-                    FirstName = userDTO.firstName,
-                    LastName = userDTO.lastName,
-                    Password = null 
+                    throw new UnauthorizedAccessException("Invalid Facebook access token.");
+                }
+
+                var responseContent = await facebookResponse.Content.ReadAsStringAsync();
+                var facebookUser = JsonSerializer.Deserialize<JsonElement>(responseContent);
+
+                // Extract user data from verified Facebook response
+                var email = facebookUser.GetProperty("email").GetString();
+                var firstName = facebookUser.GetProperty("first_name").GetString();
+                var lastName = facebookUser.GetProperty("last_name").GetString();
+                var facebookId = facebookUser.GetProperty("id").GetString();
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    throw new UnauthorizedAccessException("Email not provided by Facebook.");
+                }
+
+                // Find or create user
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        Email = email,
+                        FirstName = firstName,
+                        LastName = lastName,
+                        Password = null
+                    };
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Generate Access Token
+                var accessToken = GenerateJwtToken(user);
+                var accessTokenExpiry = DateTime.UtcNow.AddMinutes(
+                    int.Parse(_configuration["JwtSettings:TokenExpirationMinutes"]));
+
+                // Generate and Save Refresh Token
+                var refreshToken = GenerateRefreshToken();
+                var refreshTokenExpiry = DateTime.UtcNow.AddDays(
+                    int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"]));
+
+                var newRefreshToken = new Token
+                {
+                    RefreshToken = refreshToken,
+                    ExpiryDate = refreshTokenExpiry,
+                    UserId = user.Id
                 };
-                _context.Users.Add(user);
+
+                _context.Token.Add(newRefreshToken);
                 await _context.SaveChangesAsync();
+
+                return new AuthResponceDTO
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    AccessTokenExpiry = accessTokenExpiry,
+                    UserId = user.Id,
+                    Email = user.Email
+                };
             }
-
-            // Generate Access Token
-            var accessToken = GenerateJwtToken(user);
-            var accessTokenExpiry = DateTime.UtcNow.AddMinutes(
-                int.Parse(_configuration["JwtSettings:TokenExpirationMinutes"]));
-
-            // Generate and Save Refresh Token
-            var refreshToken = GenerateRefreshToken();
-            var refreshTokenExpiry = DateTime.UtcNow.AddDays(
-                int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"]));
-
-            var newRefreshToken = new Token
+            catch (Exception ex)
             {
-                RefreshToken = refreshToken,
-                ExpiryDate = refreshTokenExpiry,
-                UserId = user.Id
-            };
-
-            _context.Token.Add(newRefreshToken);
-            await _context.SaveChangesAsync();
-
-            return new AuthResponceDTO
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                AccessTokenExpiry = accessTokenExpiry,
-                UserId = user.Id,
-                Email = user.Email
-            };
-
-
+                throw new UnauthorizedAccessException("Invalid Facebook access token.", ex);
+            }
         }
     }
 }

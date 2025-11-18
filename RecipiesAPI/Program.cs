@@ -7,6 +7,7 @@ using RecipiesAPI.Services;
 using RecipiesAPI.Services.Interfaces;
 using Microsoft.OpenApi.Models;
 using RecipiesAPI.Mapper;
+using RecipiesAPI.Middleware;
 using DotNetEnv;
 
 Env.Load(); // defaults to .env in current directory
@@ -16,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddHttpClient(); // Required for Facebook token verification
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer(); // Required for Swagger
@@ -100,6 +102,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+// Add global exception handler first
+app.UseGlobalExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
