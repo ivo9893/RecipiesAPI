@@ -73,6 +73,7 @@ namespace RecipiesAPI.Services
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
                 AccessTokenExpiry = accessTokenExpiry,
+                RefreshTokenExpiry = refreshTokenExpiry,
                 UserId = user.Id,
                 Email = user.Email
             };
@@ -123,6 +124,7 @@ namespace RecipiesAPI.Services
                 AccessToken = newAccessToken,
                 RefreshToken = newRefreshTokenValue,
                 AccessTokenExpiry = newAccessTokenExpiry,
+                RefreshTokenExpiry = newRefreshTokenExpiry,
                 UserId = existingRefreshToken.User.Id,
                 Email = existingRefreshToken.User.Email
             };
@@ -221,6 +223,7 @@ namespace RecipiesAPI.Services
                     AccessToken = accessToken,
                     RefreshToken = refreshToken,
                     AccessTokenExpiry = accessTokenExpiry,
+                    RefreshTokenExpiry = refreshTokenExpiry,
                     UserId = user.Id,
                     Email = user.Email
                 };
@@ -308,6 +311,7 @@ namespace RecipiesAPI.Services
                     AccessToken = accessToken,
                     RefreshToken = refreshToken,
                     AccessTokenExpiry = accessTokenExpiry,
+                    RefreshTokenExpiry = refreshTokenExpiry,
                     UserId = user.Id,
                     Email = user.Email
                 };
