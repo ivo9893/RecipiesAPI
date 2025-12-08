@@ -106,8 +106,26 @@ try
         };
     });
 
+<<<<<<< HEAD
+builder.Services.AddAuthorization();
+
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
+var app = builder.Build();
+=======
     builder.Services.AddAuthorization();
     var app = builder.Build();
+>>>>>>> 18449f18f2f532d6b2896a068b021d6feddcf32f
 
 
     using (var scope = app.Services.CreateScope())
@@ -147,3 +165,15 @@ finally
     // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
     LogManager.Shutdown();
 }
+<<<<<<< HEAD
+
+app.UseCors("AllowFrontend");
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+=======
+>>>>>>> 18449f18f2f532d6b2896a068b021d6feddcf32f

@@ -27,18 +27,29 @@ namespace RecipiesAPI.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
-            var authResponse = await _authService.LoginAsync(loginDto);
+            var auth = await _authService.LoginAsync(loginDto);
 
-            if (authResponse == null)
-            {
+            if (auth == null)
                 return Unauthorized(new { message = "Invalid email or password." });
-            }
 
-            return Ok(authResponse);
+            Response.Cookies.Append("refresh_token", auth.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,             
+                SameSite = SameSiteMode.Strict,
+                Expires = auth.AccessTokenExpiry,
+                Path = "/api/auth/refresh"  
+            });
+
+            return Ok(new
+            {
+                access_token = auth.AccessToken,
+                accessTokenExpiry = auth.AccessTokenExpiry,
+                userId = auth.UserId,
+                email = auth.Email
+            });
         }
 
         /// <summary>
@@ -46,25 +57,41 @@ namespace RecipiesAPI.Controllers
         /// </summary>
         /// <param name="refreshToken">The refresh token.</param>
         /// <returns>New access token and refresh token.</returns>
-        [HttpPost("refresh-token")] // e.g., /api/auth/refresh-token
         [ProducesResponseType(typeof(AuthResponceDTO), 200)]
         [ProducesResponseType(400)] // For missing/invalid refresh token in request
         [ProducesResponseType(401)] // For invalid/expired/revoked refresh token
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken) // Expecting raw string in body
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh()
         {
-            if (string.IsNullOrWhiteSpace(refreshToken))
-            {
-                return BadRequest(new { message = "Refresh token is required." });
-            }
+            // 👉 Read cookie (React cannot access this)
+            var refreshToken = Request.Cookies["refresh_token"];
 
-            var authResponse = await _authService.RefreshTokenAsync(refreshToken);
+            if (refreshToken == null)
+                return Unauthorized(new { message = "Refresh token missing." });
 
-            if (authResponse == null)
-            {
+            var auth = await _authService.RefreshTokenAsync(refreshToken);
+
+            if (auth == null)
                 return Unauthorized(new { message = "Invalid, expired, or revoked refresh token." });
-            }
 
-            return Ok(authResponse);
+            // 👉 Rotate refresh token: set new cookie
+            Response.Cookies.Append("refresh_token", auth.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = auth.AccessTokenExpiry,
+                Path = "/api/auth/refresh"
+            });
+
+            // 👉 Return only access token
+            return Ok(new
+            {
+                access_token = auth.AccessToken,
+                accessTokenExpiry = auth.AccessTokenExpiry,
+                userId = auth.UserId,
+                email = auth.Email
+            });
         }
 
         [HttpPost("google")]
