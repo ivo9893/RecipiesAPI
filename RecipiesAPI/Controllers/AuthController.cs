@@ -37,10 +37,10 @@ namespace RecipiesAPI.Controllers
             Response.Cookies.Append("refresh_token", auth.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,             
+                Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = auth.AccessTokenExpiry,
-                Path = "/api/auth/refresh"  
+                Expires = auth.RefreshTokenExpiry,
+                Path = "/api/auth/refresh"
             });
 
             return Ok(new
@@ -80,7 +80,7 @@ namespace RecipiesAPI.Controllers
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = auth.AccessTokenExpiry,
+                Expires = auth.RefreshTokenExpiry,
                 Path = "/api/auth/refresh"
             });
 
@@ -104,7 +104,22 @@ namespace RecipiesAPI.Controllers
                     return Unauthorized(new { message = "Authentication failed." });
                 }
 
-                return Ok(authResponse);
+                Response.Cookies.Append("refresh_token", authResponse.RefreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = authResponse.RefreshTokenExpiry,
+                    Path = "/api/auth/refresh"
+                });
+
+                return Ok(new
+                {
+                    access_token = authResponse.AccessToken,
+                    accessTokenExpiry = authResponse.AccessTokenExpiry,
+                    userId = authResponse.UserId,
+                    email = authResponse.Email
+                });
 
             } catch (UnauthorizedAccessException) {
                 return Unauthorized(new { message = "Invalid Google ID token." });
@@ -128,7 +143,22 @@ namespace RecipiesAPI.Controllers
                     return Unauthorized(new { message = "Authentication failed." });
                 }
 
-                return Ok(authResponse);
+                Response.Cookies.Append("refresh_token", authResponse.RefreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = authResponse.RefreshTokenExpiry,
+                    Path = "/api/auth/refresh"
+                });
+
+                return Ok(new
+                {
+                    access_token = authResponse.AccessToken,
+                    accessTokenExpiry = authResponse.AccessTokenExpiry,
+                    userId = authResponse.UserId,
+                    email = authResponse.Email
+                });
 
             }
             catch (UnauthorizedAccessException)
