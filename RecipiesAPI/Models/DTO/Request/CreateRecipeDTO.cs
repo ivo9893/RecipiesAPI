@@ -33,6 +33,8 @@ namespace RecipiesAPI.Models.DTO.Request
         [MaxLength(10000, ErrorMessage = "Instructions cannot exceed 10,000 characters.")]
         public string Instructions { get; set; }
 
+        public string RowID { get; set; }
+
         public List<CreateImageDTO> Images { get; set; } = new();
 
         public List<CreateRecipeCategoryDTO> RecipeCategories { get; set; } = new();

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RecipiesAPI.Models.DTO.Request;
 using RecipiesAPI.Services.Interfaces;
-
+using Google.Apis.Auth;
 namespace RecipiesAPI.Controllers
 {
     [ApiController]
@@ -92,6 +92,49 @@ namespace RecipiesAPI.Controllers
                 userId = auth.UserId,
                 email = auth.Email
             });
+        }
+
+        [HttpPost("google")]
+        public async Task<IActionResult> GoogleSignIn([FromBody] string token) {
+            try {
+
+                var authResponse = await _authService.VerifyGoogleTokenAsync(token);
+
+                if (authResponse == null) {
+                    return Unauthorized(new { message = "Authentication failed." });
+                }
+
+                return Ok(authResponse);
+
+            } catch (UnauthorizedAccessException) {
+                return Unauthorized(new { message = "Invalid Google ID token." });
+            }
+        }
+
+        [HttpPost("facebook")]
+        public async Task<IActionResult> FacebookSignIn([FromBody] LoginFacebookDTO user)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var authResponse = await _authService.LoginFacebookAsync(user);
+
+                if (authResponse == null)
+                {
+                    return Unauthorized(new { message = "Authentication failed." });
+                }
+
+                return Ok(authResponse);
+
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { message = "Invalid Facebook access token." });
+            }
         }
     }
 }

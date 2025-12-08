@@ -38,6 +38,8 @@ namespace RecipiesAPI.Models
         [Required]
         public string Instructions { get; set; } 
 
+        public string RowID { get; set; }
+
         public ICollection<RecipeIngredient> RecipeIngredients { get; set; }
         public ICollection<Image> Images { get; set; }
         public ICollection<RecipeCategory> RecipeCategories { get; set; }

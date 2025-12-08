@@ -1,4 +1,5 @@
-﻿using RecipiesAPI.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using RecipiesAPI.Models;
 using RecipiesAPI.Models.DTO.Request;
 using RecipiesAPI.Models.DTO.Responce;
 
@@ -10,6 +11,7 @@ namespace RecipiesAPI.Services.Interfaces
         Task<RecipeResponse> GetRecipeByIdAsync(int id);
         Task<List<RecipeResponse>> GetRecipesByAuthorIdAsync(int authorId);
         Task<List<RecipeResponse>> GetAllRecipesAsync();
+        Task<PagedResponse<RecipeResponse>> GetAllRecipesPagedAsync(int pageNumber, int pageSize);
         Task<List<RecipeResponse>> GetRecipesByCategoryIdAsync(int categoryId);
     }
 }
