@@ -2,7 +2,7 @@
 
 namespace RecipiesAPI.Models.DTO.Request
 {
-    public class CreateRecipeDTO
+    public class CreateRecipeDTO : IValidatableObject
     {
         [Required(ErrorMessage = "Recipe name is required.")]
         [MaxLength(500, ErrorMessage = "Recipe name cannot exceed 500 characters.")]

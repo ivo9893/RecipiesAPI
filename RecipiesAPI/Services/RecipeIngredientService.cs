@@ -14,21 +14,11 @@ namespace RecipiesAPI.Services
             _context = context;
         }
 
-        public async Task<List<RecipeIngredient>> CreateIngredientAsync(List<CreateRecipeIngredientDTO> dto, int recipeId = -1)
+        public async Task<List<RecipeIngredient>> CreateIngredientAsync(List<CreateRecipeIngredientDTO> dto, int recipeId)
         {
             if (dto == null || !dto.Any())
             {
                 throw new ArgumentException("Ingredient list cannot be null or empty.");
-            }
-
-            if (recipeId == -1)
-            {
-                int recipe = dto.First().RecipeId;
-                var recipeExists = _context.Recipes.Any(r => r.Id == recipe);
-                if (!recipeExists)
-                {
-                    throw new Exception($"Recipe with Id {recipe} not found.");
-                }
             }
 
             var ingredients = new List<RecipeIngredient>();
@@ -51,10 +41,10 @@ namespace RecipiesAPI.Services
 
                 var ingredient = new RecipeIngredient
                 {
-                    RecipeId = recipeId == -1 ? ingredientDto.RecipeId : recipeId,
+                    RecipeId = recipeId,
                     Name = ingredientDto.Name,
                     Quantity = ingredientDto.Quantity,
-                    Unit = ingredientDto.Unit
+                    UnitId = ingredientDto.Unit
                 };
                 ingredients.Add(ingredient);
             }

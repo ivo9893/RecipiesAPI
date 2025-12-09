@@ -14,17 +14,8 @@ namespace RecipiesAPI.Services
             _context = context;
         }
 
-        public async Task<List<Image>> CreateImageAsync(List<CreateImageDTO> images, int recipeId = -1)
+        public async Task<List<Image>> CreateImageAsync(List<CreateImageDTO> images, int recipeId)
         {
-            if (recipeId == -1)
-            {
-                var recipe = images.First().RecipeId;
-                var recipeExists = await _context.Recipes.AnyAsync(r => r.Id == recipe);
-                if (!recipeExists)
-                {
-                    throw new Exception($"Recipe with Id {recipe} not found.");
-                }
-            }
 
             var imageList = new List<Image>();  
 
@@ -36,7 +27,7 @@ namespace RecipiesAPI.Services
                 }
                 var imageObj = new Image
                 {
-                    RecipeId = recipeId == -1 ? image.RecipeId : recipeId,
+                    RecipeId = recipeId,
                     Url = image.Url
                 };
                 imageList.Add(imageObj);

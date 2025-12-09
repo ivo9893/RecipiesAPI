@@ -307,7 +307,7 @@ namespace RecipiesAPI.Migrations
                         .IsRequired();
 
                     b.HasOne("RecipiesAPI.Models.Units", "Unit")
-                        .WithMany("Ingredients")
+                        .WithMany()
                         .HasForeignKey("UnitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -340,11 +340,6 @@ namespace RecipiesAPI.Migrations
                     b.Navigation("RecipeCategories");
 
                     b.Navigation("RecipeIngredients");
-                });
-
-            modelBuilder.Entity("RecipiesAPI.Models.Units", b =>
-                {
-                    b.Navigation("Ingredients");
                 });
 
             modelBuilder.Entity("RecipiesAPI.Models.User", b =>

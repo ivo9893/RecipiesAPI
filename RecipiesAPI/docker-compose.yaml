@@ -31,6 +31,8 @@ services:
   webapi:
     build: .
     container_name: RecipiesAPI
+    env_file:
+      - .env
     ports:
       - "5000:80"  # host:container
     environment:
