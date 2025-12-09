@@ -161,6 +161,7 @@ namespace RecipiesAPI.Services
                     Servings = dto.Servings,
                     AuthorId = dto.AuthorId,
                     Instructions = dto.Instructions.Trim(),
+                    RowID = dto.RowID,
                     CreatedAt = DateTime.UtcNow
                 };
 

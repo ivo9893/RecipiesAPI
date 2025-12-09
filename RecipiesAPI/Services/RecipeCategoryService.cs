@@ -15,19 +15,8 @@ namespace RecipiesAPI.Services
         {
             _context = context;
         }
-        public async Task<List<RecipeCategory>> CreateRecipeCategoryAsync(List<CreateRecipeCategoryDTO> categories, int recipeId = -1)
+        public async Task<List<RecipeCategory>> CreateRecipeCategoryAsync(List<CreateRecipeCategoryDTO> categories, int recipeId)
         {
-
-            if (recipeId == -1)
-            {
-                int RecipeId = categories.First().RecipeId;
-                var recipeExists = await _context.Recipes.AnyAsync(r => r.Id == RecipeId);
-                if (!recipeExists)
-                {
-                    throw new Exception($"Recipe with Id {RecipeId} not found.");
-                }
-            }
-
             var recipeCategories = new List<RecipeCategory>();
             foreach (var category in categories)
             {
@@ -46,7 +35,7 @@ namespace RecipiesAPI.Services
                 var recipeCategory = new RecipeCategory
                 {
                     CategoryId = category.CategoryId,
-                    RecipeId = recipeId == -1 ? category.RecipeId : recipeId,
+                    RecipeId = recipeId,
                     CreatedAt = DateTime.UtcNow
                 };
 

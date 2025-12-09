@@ -11,7 +11,5 @@ namespace RecipiesAPI.Models
         [MaxLength(100)]
         public string Name { get; set; }
 
-        // Navigation property for related ingredients
-        public ICollection<RecipeIngredient> Ingredients { get; set; }
     }
 }

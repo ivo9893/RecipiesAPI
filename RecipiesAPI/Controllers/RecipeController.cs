@@ -22,7 +22,6 @@ namespace RecipiesAPI.Controllers
             _logger = logger;
         }
 
-        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateRecipe([FromBody] CreateRecipeDTO dto)
         {

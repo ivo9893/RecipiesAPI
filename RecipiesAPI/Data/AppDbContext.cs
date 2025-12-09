@@ -42,6 +42,13 @@ namespace RecipiesAPI.Data
                 .HasForeignKey(ri => ri.RecipeId)
                 .OnDelete(DeleteBehavior.Cascade); // If recipe is deleted, ingredients should also be deleted
 
+            // RecipeIngredient and Units (Many ingredients share one unit; Unit has no collection navigation)
+            modelBuilder.Entity<RecipeIngredient>()
+                .HasOne(ri => ri.Unit)
+                .WithMany()
+                .HasForeignKey(ri => ri.UnitId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Recipe and Image (One-to-Many: Recipe has many Images)
             modelBuilder.Entity<Image>()
                 .HasOne(i => i.Recipe)
